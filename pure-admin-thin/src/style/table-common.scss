@@ -1,0 +1,30 @@
+.table-common {
+  :deep(.el-table th.el-table__cell) {
+    background-color: #f5f7fa !important;
+    text-align: center !important;
+  }
+
+  :deep(.el-table .el-table__cell) {
+    text-align: center;
+  }
+
+  .pagination {
+    margin-top: 20px;
+    display: flex;
+    justify-content: flex-end;
+  }
+
+  .search-form {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+}
+
+.card-common {
+  .search-form {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+}
