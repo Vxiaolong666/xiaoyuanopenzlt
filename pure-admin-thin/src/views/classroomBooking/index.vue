@@ -13,10 +13,12 @@ import Refresh from "~icons/ep/refresh";
 import Check from "~icons/ep/check";
 import Close from "~icons/ep/close";
 
+// 定义组件名称
 defineOptions({
   name: "ClassroomBookingManage"
 });
 
+// 教室数据接口定义
 interface ClassroomItem {
   id: number;
   name: string;
@@ -27,6 +29,7 @@ interface ClassroomItem {
   status: string;
 }
 
+// 借用记录数据接口定义
 interface BookingRecord {
   id: number;
   classroomId: number;
@@ -40,17 +43,21 @@ interface BookingRecord {
   createTime: string;
 }
 
+// 响应式状态定义
 const loading = ref(false);
 
+// 搜索表单数据
 const searchForm = reactive({
   classroomName: "",
   applicant: "",
   status: ""
 });
 
-const classroomList = ref<ClassroomItem[]>([]);
-const bookingList = ref<BookingRecord[]>([]);
+// 数据列表
+const classroomList = ref<ClassroomItem[]>([]); // 教室列表
+const bookingList = ref<BookingRecord[]>([]); // 借用记录列表
 
+// 状态选项配置
 const statusOptions = [
   { value: "", label: "全部" },
   { value: "待审批", label: "待审批" },
@@ -59,6 +66,7 @@ const statusOptions = [
   { value: "已拒绝", label: "已拒绝" }
 ];
 
+// 获取教室和借用数据
 const fetchData = () => {
   loading.value = true;
 
@@ -98,6 +106,7 @@ const fetchData = () => {
     });
 };
 
+// 表格列配置
 const columns: TableColumnList = [
   {
     label: "申请ID",
@@ -152,6 +161,7 @@ const columns: TableColumnList = [
   }
 ];
 
+// 过滤后的借用记录（搜索过滤）
 const filteredData = computed(() => {
   let result = bookingList.value;
   if (searchForm.classroomName) {
@@ -172,14 +182,17 @@ const filteredData = computed(() => {
   return result;
 });
 
+// 待审批申请列表
 const pendingList = computed(() => {
   return bookingList.value.filter(item => item.status === "待审批");
 });
 
+// 进行中借用列表
 const activeList = computed(() => {
   return bookingList.value.filter(item => item.status === "进行中");
 });
 
+// 通过借用申请
 const handleApprove = (row: BookingRecord) => {
   ElMessageBox.confirm(
     `确定要通过"${row.applicant}"的借用申请吗？`,
@@ -201,6 +214,7 @@ const handleApprove = (row: BookingRecord) => {
   });
 };
 
+// 拒绝借用申请
 const handleReject = (row: BookingRecord) => {
   ElMessageBox.confirm(
     `确定要拒绝"${row.applicant}"的借用申请吗？`,
@@ -222,6 +236,7 @@ const handleReject = (row: BookingRecord) => {
   });
 };
 
+// 结束借用
 const handleEndBooking = (row: BookingRecord) => {
   ElMessageBox.confirm(
     `确定要结束教室"${row.classroomName}"的借用吗？`,
@@ -243,17 +258,20 @@ const handleEndBooking = (row: BookingRecord) => {
   });
 };
 
+// 重置搜索条件
 const resetSearch = () => {
   searchForm.classroomName = "";
   searchForm.applicant = "";
   searchForm.status = "";
 };
 
+// 刷新数据
 const onRefresh = () => {
   fetchData();
   message("刷新成功", { type: "success" });
 };
 
+// 组件挂载时获取数据
 onMounted(() => {
   fetchData();
 });
@@ -261,6 +279,7 @@ onMounted(() => {
 
 <template>
   <div class="main table-common">
+    <!-- 搜索区域 -->
     <el-card shadow="never" class="mb-4">
       <el-form :inline="true" class="search-form">
         <el-form-item label="教室名称">
@@ -307,6 +326,7 @@ onMounted(() => {
       </el-form>
     </el-card>
 
+    <!-- 统计卡片区域 -->
     <el-row :gutter="20" class="mb-4">
       <el-col :span="8">
         <el-card shadow="hover" class="stats-card">
@@ -344,7 +364,9 @@ onMounted(() => {
       </el-col>
     </el-row>
 
+    <!-- 借用记录表格 -->
     <PureTableBar title="借用记录管理" :columns="columns" @refresh="onRefresh">
+      <!-- 表格内容插槽 -->
       <template #default="{ size, dynamicColumns }">
         <pure-table
           :loading="loading"
@@ -412,6 +434,7 @@ onMounted(() => {
   </div>
 </template>
 
+<!-- 样式 -->
 <style lang="scss" scoped>
 @import "@/style/table-common.scss";
 

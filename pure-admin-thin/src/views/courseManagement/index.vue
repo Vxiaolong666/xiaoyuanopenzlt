@@ -14,22 +14,26 @@ import Plus from "~icons/ep/plus";
 import EditPen from "~icons/ep/edit-pen";
 import Delete from "~icons/ep/delete";
 
+// 定义组件名称
 defineOptions({
   name: "CourseManagement"
 });
 
+// 响应式状态定义
 const loading = ref(false);
-const dataList = ref<Course[]>([]);
-const dialogVisible = ref(false);
+const dataList = ref<Course[]>([]); // 课程数据列表
+const dialogVisible = ref(false); // 新增/编辑对话框显示状态
 const dialogTitle = ref("添加课程");
-const isEdit = ref(false);
+const isEdit = ref(false); // 是否编辑模式
 const formRef = ref<FormInstance>();
 
+// 搜索表单数据
 const searchForm = reactive({
   name: "",
   teacher: ""
 });
 
+// 表单数据（用于新增和编辑）
 const form = reactive({
   id: null as number | null,
   name: "",
@@ -40,6 +44,7 @@ const form = reactive({
   description: ""
 });
 
+// 表单验证规则
 const rules = {
   name: [{ required: true, message: "请输入课程名称", trigger: "blur" }],
   teacher: [{ required: true, message: "请输入授课教师", trigger: "blur" }],
@@ -48,6 +53,7 @@ const rules = {
   classroom: [{ required: true, message: "请选择教室", trigger: "change" }]
 };
 
+// 表格列配置
 const columns: TableColumnList = [
   {
     label: "课程ID",
@@ -96,6 +102,7 @@ const columns: TableColumnList = [
   }
 ];
 
+// 教室选项配置
 const classroomOptions = [
   "A101 - 教学楼A",
   "A201 - 教学楼A",
@@ -105,6 +112,7 @@ const classroomOptions = [
   "D401 - 综合楼D"
 ];
 
+// 过滤后的数据（搜索过滤）
 const filteredData = computed(() => {
   let result = dataList.value;
   if (searchForm.name) {
@@ -120,6 +128,7 @@ const filteredData = computed(() => {
   return result;
 });
 
+// 获取课程数据
 const fetchData = () => {
   loading.value = true;
   fetchCommonData
@@ -137,6 +146,7 @@ const fetchData = () => {
     });
 };
 
+// 打开新增课程对话框
 const handleAdd = () => {
   isEdit.value = false;
   dialogTitle.value = "添加课程";
@@ -150,6 +160,7 @@ const handleAdd = () => {
   dialogVisible.value = true;
 };
 
+// 打开编辑课程对话框
 const handleEdit = (row: Course) => {
   isEdit.value = true;
   dialogTitle.value = "编辑课程";
@@ -163,6 +174,7 @@ const handleEdit = (row: Course) => {
   dialogVisible.value = true;
 };
 
+// 删除课程
 const handleDelete = (row: Course) => {
   ElMessageBox.confirm(`确定要删除课程"${row.name}"吗？`, "删除确认", {
     confirmButtonText: "确定",
@@ -180,6 +192,7 @@ const handleDelete = (row: Course) => {
   });
 };
 
+// 提交表单（新增或编辑课程）
 const submitForm = async (formEl: FormInstance | undefined) => {
   if (!formEl) return;
   await formEl.validate(valid => {
@@ -224,16 +237,19 @@ const submitForm = async (formEl: FormInstance | undefined) => {
   });
 };
 
+// 重置搜索条件
 const resetSearch = () => {
   searchForm.name = "";
   searchForm.teacher = "";
 };
 
+// 刷新数据
 const onRefresh = () => {
   fetchData();
   message("刷新成功", { type: "success" });
 };
 
+// 组件挂载时获取数据
 onMounted(() => {
   fetchData();
 });
@@ -241,6 +257,7 @@ onMounted(() => {
 
 <template>
   <div class="main table-common">
+    <!-- 搜索区域 -->
     <el-card shadow="never" class="mb-4">
       <el-form :inline="true" class="search-form">
         <el-form-item label="课程名称">
@@ -272,7 +289,9 @@ onMounted(() => {
       </el-form>
     </el-card>
 
+    <!-- 表格区域 -->
     <PureTableBar title="课程管理" :columns="columns" @refresh="onRefresh">
+      <!-- 操作按钮插槽 -->
       <template #buttons>
         <el-button type="primary" @click="handleAdd">
           <el-icon class="mr-1"><Plus /></el-icon>
@@ -316,6 +335,7 @@ onMounted(() => {
       </template>
     </PureTableBar>
 
+    <!-- 新增/编辑课程对话框 -->
     <el-dialog v-model="dialogVisible" :title="dialogTitle" width="600px">
       <el-form ref="formRef" :model="form" :rules="rules" label-width="80px">
         <el-form-item label="课程名称" prop="name">
@@ -378,6 +398,7 @@ onMounted(() => {
   </div>
 </template>
 
+<!-- 样式 -->
 <style lang="scss" scoped>
 @import "@/style/table-common.scss";
 </style>

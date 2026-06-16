@@ -14,10 +14,12 @@ import Plus from "~icons/ep/plus";
 import EditPen from "~icons/ep/edit-pen";
 import Delete from "~icons/ep/delete";
 
+// 定义组件名称
 defineOptions({
   name: "AdminManagement"
 });
 
+// 用户数据接口定义
 interface UserItem {
   id: number;
   username: string;
@@ -26,17 +28,20 @@ interface UserItem {
   status?: string;
 }
 
-const loading = ref(false);
-const dataList = ref<UserItem[]>([]);
-const dialogVisible = ref(false);
-const dialogTitle = ref("添加管理员");
-const isEdit = ref(false);
-const formRef = ref<FormInstance>();
+// 响应式状态定义
+const loading = ref(false); // 加载状态
+const dataList = ref<UserItem[]>([]); // 用户数据列表
+const dialogVisible = ref(false); // 对话框显示状态
+const dialogTitle = ref("添加管理员"); // 对话框标题
+const isEdit = ref(false); // 是否编辑模式
+const formRef = ref<FormInstance>(); // 表单引用
 
+// 搜索表单数据
 const searchForm = reactive({
   username: ""
 });
 
+// 表单数据（用于新增和编辑）
 const form = reactive({
   id: null as number | null,
   username: "",
@@ -44,6 +49,7 @@ const form = reactive({
   role: "admin"
 });
 
+// 表单验证规则（根据编辑/新增模式动态调整）
 const rules = computed(() => ({
   username: [
     { required: true, message: "请输入用户名", trigger: "blur" },
@@ -57,6 +63,7 @@ const rules = computed(() => ({
       ]
 }));
 
+// 表格列配置
 const columns: TableColumnList = [
   {
     label: "管理员ID",
@@ -100,8 +107,10 @@ const columns: TableColumnList = [
   }
 ];
 
+// 分页配置
 const { pagination, handleSizeChange, handleCurrentChange } = usePagination();
 
+// 过滤后的数据（只显示管理员角色 + 搜索过滤）
 const filteredData = computed(() => {
   let result = dataList.value.filter(item => item.role === "admin");
   if (searchForm.username) {
@@ -112,17 +121,20 @@ const filteredData = computed(() => {
   return result;
 });
 
+// 当前页的分页数据
 const paginationData = computed(() => {
   const start = (pagination.currentPage - 1) * pagination.pageSize;
   const end = start + pagination.pageSize;
   return filteredData.value.slice(start, end);
 });
 
+// 时间格式化函数
 const formatTime = (time: string) => {
   if (!time) return "-";
   return dayjs(time).format("YYYY-MM-DD HH:mm:ss");
 };
 
+// 获取用户列表数据
 const fetchData = () => {
   loading.value = true;
   fetchCommonData.users()
@@ -141,6 +153,7 @@ const fetchData = () => {
     });
 };
 
+// 打开新增管理员对话框
 const handleAdd = () => {
   isEdit.value = false;
   dialogTitle.value = "添加管理员";
@@ -151,6 +164,7 @@ const handleAdd = () => {
   dialogVisible.value = true;
 };
 
+// 打开编辑管理员对话框
 const handleEdit = (row: UserItem) => {
   isEdit.value = true;
   dialogTitle.value = "编辑管理员";
@@ -161,6 +175,7 @@ const handleEdit = (row: UserItem) => {
   dialogVisible.value = true;
 };
 
+// 删除管理员
 const handleDelete = (row: UserItem) => {
   if (row.username === "admin") {
     message("不能删除超级管理员账号", { type: "warning" });
@@ -182,11 +197,13 @@ const handleDelete = (row: UserItem) => {
   });
 };
 
+// 提交表单（新增或编辑）
 const submitForm = async (formEl: FormInstance | undefined) => {
   if (!formEl) return;
   await formEl.validate(async valid => {
     if (valid) {
       if (isEdit.value) {
+        // 编辑模式
         const data: any = {
           id: form.id,
           username: form.username,
@@ -205,6 +222,7 @@ const submitForm = async (formEl: FormInstance | undefined) => {
           }
         });
       } else {
+        // 新增模式
         addUser({
           username: form.username,
           password: form.password,
@@ -223,20 +241,24 @@ const submitForm = async (formEl: FormInstance | undefined) => {
   });
 };
 
+// 重置搜索条件
 const resetSearch = () => {
   searchForm.username = "";
   pagination.currentPage = 1;
 };
 
+// 执行搜索
 const handleSearch = () => {
   pagination.currentPage = 1;
   pagination.total = filteredData.value.length;
 };
 
+// 刷新数据
 const onRefresh = () => {
   fetchData();
 };
 
+// 组件挂载时获取数据
 onMounted(() => {
   fetchData();
 });
@@ -244,6 +266,7 @@ onMounted(() => {
 
 <template>
   <div class="main table-common">
+    <!-- 搜索区域 -->
     <el-card shadow="never" class="mb-4">
       <el-form :inline="true" :model="searchForm" class="search-form">
         <el-form-item label="用户名">
@@ -268,7 +291,9 @@ onMounted(() => {
       </el-form>
     </el-card>
 
+    <!-- 表格区域 -->
     <PureTableBar title="管理员管理" :columns="columns" @refresh="onRefresh">
+      <!-- 操作按钮插槽 -->
       <template #buttons>
         <el-button type="primary" @click="handleAdd">
           <el-icon class="mr-1"><Plus /></el-icon>
@@ -276,6 +301,7 @@ onMounted(() => {
         </el-button>
       </template>
 
+      <!-- 表格内容插槽 -->
       <template #default="{ size, dynamicColumns }">
         <pure-table
           :loading="loading"
@@ -285,16 +311,19 @@ onMounted(() => {
           row-key="id"
           show-overflow-tooltip
         >
+          <!-- 角色列插槽 -->
           <template #role="{ row }">
             <el-tag type="primary" size="small">
               系统管理员
             </el-tag>
           </template>
+          <!-- 权限范围列插槽 -->
           <template #permission="{ row }">
             <el-tag type="warning" size="small">
               全部
             </el-tag>
           </template>
+          <!-- 状态列插槽 -->
           <template #status="{ row }">
             <el-tag
               :type="row.status === 'disabled' ? 'danger' : 'success'"
@@ -303,9 +332,11 @@ onMounted(() => {
               {{ row.status === "disabled" ? "禁用" : "正常" }}
             </el-tag>
           </template>
+          <!-- 时间列插槽 -->
           <template #time="{ row }">
             {{ formatTime(row.time) }}
           </template>
+          <!-- 操作列插槽 -->
           <template #operation="{ row }">
             <el-button
               type="primary"
@@ -329,6 +360,7 @@ onMounted(() => {
           </template>
         </pure-table>
 
+        <!-- 分页组件 -->
         <el-pagination
           v-model:current-page="pagination.currentPage"
           v-model:page-size="pagination.pageSize"
@@ -342,6 +374,7 @@ onMounted(() => {
       </template>
     </PureTableBar>
 
+    <!-- 新增/编辑对话框 -->
     <el-dialog
       v-model="dialogVisible"
       :title="dialogTitle"
@@ -376,6 +409,7 @@ onMounted(() => {
   </div>
 </template>
 
+<!-- 样式 -->
 <style lang="scss" scoped>
 @import "@/style/table-common.scss";
 

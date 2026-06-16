@@ -14,10 +14,12 @@ import Delete from "~icons/ep/delete";
 import Upload from "~icons/ep/upload";
 import User from "~icons/ep/user";
 
+// 定义组件名称
 defineOptions({
   name: "GradeManagement"
 });
 
+// 学生数据接口定义
 interface StudentItem {
   id: number;
   studentNo: string;
@@ -28,6 +30,7 @@ interface StudentItem {
   major: string;
 }
 
+// 成绩数据接口定义
 interface GradeItem {
   id: number;
   studentId: number;
@@ -50,6 +53,7 @@ interface GradeItem {
   createTime?: string;
 }
 
+// 班级信息接口定义
 interface ClassInfo {
   id: number;
   name: string;
@@ -57,21 +61,26 @@ interface ClassInfo {
   major: string;
 }
 
+// 响应式状态定义
 const loading = ref(false);
-const dialogVisible = ref(false);
+const dialogVisible = ref(false); // 新增/编辑对话框显示状态
 const dialogTitle = ref("添加成绩");
-const isEdit = ref(false);
+const isEdit = ref(false); // 是否编辑模式
 const formRef = ref<FormInstance>();
-const activeTab = ref("byClass");
+const activeTab = ref("byClass"); // 当前激活的标签页
+
+// 筛选条件
 const selectedClass = ref("");
 const selectedCourse = ref("");
 const selectedSemester = ref("");
 
+// 搜索表单数据
 const searchForm = reactive({
   studentName: "",
   studentNo: ""
 });
 
+// 表单数据（用于新增和编辑成绩）
 const form = reactive({
   id: null as number | null,
   studentId: null as number | null,
@@ -93,6 +102,7 @@ const form = reactive({
   status: "未发布"
 });
 
+// 表单验证规则
 const rules = {
   studentName: [{ required: true, message: "请选择学生", trigger: "change" }],
   courseName: [{ required: true, message: "请选择课程", trigger: "change" }],
@@ -110,10 +120,12 @@ const rules = {
   examType: [{ required: true, message: "请选择考试类型", trigger: "change" }]
 };
 
-const classList = ref<ClassInfo[]>([]);
-const studentList = ref<StudentItem[]>([]);
-const gradeList = ref<GradeItem[]>([]);
+// 数据列表
+const classList = ref<ClassInfo[]>([]); // 班级列表
+const studentList = ref<StudentItem[]>([]); // 学生列表
+const gradeList = ref<GradeItem[]>([]); // 成绩列表
 
+// 选项配置
 const semesterOptions = [
   "2025-2026-1",
   "2025-2026-2",
@@ -130,6 +142,7 @@ const examTypeOptions = [
 const courseOptions = ref<string[]>([]);
 const courseList = ref<any[]>([]);
 
+// 当前班级的学生列表
 const classStudents = computed(() => {
   if (!selectedClass.value) return [];
   return studentList.value.filter(
@@ -137,6 +150,7 @@ const classStudents = computed(() => {
   );
 });
 
+// 当前筛选条件下的成绩列表
 const classGrades = computed(() => {
   let result = gradeList.value;
 
@@ -169,6 +183,7 @@ const classGrades = computed(() => {
   return result;
 });
 
+// 获取成绩、学生、班级、课程数据
 const fetchData = () => {
   loading.value = true;
 
@@ -230,6 +245,7 @@ const fetchData = () => {
     });
 };
 
+// 班级成绩统计数据
 const classGradeStats = computed(() => {
   if (!selectedClass.value || !selectedCourse.value || !selectedSemester.value)
     return null;
@@ -257,6 +273,7 @@ const classGradeStats = computed(() => {
   };
 });
 
+// 根据成绩计算绩点
 const calculateGradePoint = (grade: number | string) => {
   const g = Number(grade);
   if (g >= 90) return 4.0 + (g - 90) / 10;
@@ -266,6 +283,7 @@ const calculateGradePoint = (grade: number | string) => {
   return 0;
 };
 
+// 打开新增成绩对话框
 const handleAdd = () => {
   dialogTitle.value = "添加成绩";
   isEdit.value = false;
@@ -290,6 +308,7 @@ const handleAdd = () => {
   dialogVisible.value = true;
 };
 
+// 打开编辑成绩对话框
 const handleEdit = (row: GradeItem) => {
   dialogTitle.value = "编辑成绩";
   isEdit.value = true;
@@ -314,6 +333,7 @@ const handleEdit = (row: GradeItem) => {
   dialogVisible.value = true;
 };
 
+// 删除成绩记录
 const handleDelete = (row: GradeItem) => {
   ElMessageBox.confirm(
     `确认删除学生"${row.studentName}"的"${row.courseName}"成绩记录吗？`,
@@ -335,6 +355,7 @@ const handleDelete = (row: GradeItem) => {
   });
 };
 
+// 发布成绩
 const handlePublish = (row: GradeItem) => {
   ElMessageBox.confirm(
     `确认发布学生"${row.studentName}"的"${row.courseName}"成绩吗？`,
@@ -356,6 +377,7 @@ const handlePublish = (row: GradeItem) => {
   });
 };
 
+// 批量发布成绩
 const handleBatchPublish = () => {
   const unpublished = classGrades.value.filter(
     item => item.status === "未发布"
@@ -385,6 +407,7 @@ const handleBatchPublish = () => {
   });
 };
 
+// 选择学生时自动填充信息
 const handleStudentSelect = (studentId: number) => {
   const student = studentList.value.find(item => item.id === studentId);
   if (student) {
@@ -396,6 +419,7 @@ const handleStudentSelect = (studentId: number) => {
   }
 };
 
+// 选择课程时自动填充信息
 const handleCourseSelect = (courseId: number) => {
   const course = courseList.value.find(item => item.id === courseId);
   if (course) {
@@ -408,6 +432,7 @@ const handleCourseSelect = (courseId: number) => {
   }
 };
 
+// 提交表单（新增或编辑成绩）
 const submitForm = async (formEl: FormInstance | undefined) => {
   if (!formEl) return;
   await formEl.validate(valid => {
@@ -487,15 +512,18 @@ const submitForm = async (formEl: FormInstance | undefined) => {
   });
 };
 
+// 重置搜索条件
 const resetSearch = () => {
   searchForm.studentName = "";
   searchForm.studentNo = "";
 };
 
+// 刷新数据
 const onRefresh = () => {
   message("刷新成功", { type: "success" });
 };
 
+// 根据成绩获取颜色
 const getGradeColor = (grade: number) => {
   if (grade >= 90) return "#67C23A";
   if (grade >= 80) return "#409EFF";
@@ -513,6 +541,7 @@ const getGradePointColor = (gradePoint: number | string) => {
   return "#909399";
 };
 
+// 组件挂载时获取数据
 onMounted(() => {
   fetchData();
 });
@@ -520,7 +549,9 @@ onMounted(() => {
 
 <template>
   <div class="main table-common">
+    <!-- 标签页容器 -->
     <el-tabs v-model="activeTab" type="border-card" class="grade-tabs">
+      <!-- 按班级查看标签页 -->
       <el-tab-pane name="byClass">
         <template #label>
           <span class="tab-label">
@@ -529,9 +560,8 @@ onMounted(() => {
           </span>
         </template>
 
+        <!-- 筛选条件区域 -->
         <el-card shadow="never" class="mb-4">
-          <el-form :inline="true" class="search-form">
-            <el-form-item label="选择班级">
               <el-select
                 v-model="selectedClass"
                 placeholder="请选择班级"
@@ -595,6 +625,7 @@ onMounted(() => {
           </el-form>
         </el-card>
 
+        <!-- 成绩统计卡片 -->
         <el-row v-if="classGradeStats" :gutter="20" class="mb-4">
           <el-col :span="6">
             <el-card shadow="hover" class="stats-card">
@@ -648,6 +679,7 @@ onMounted(() => {
           </el-col>
         </el-row>
 
+        <!-- 成绩列表表格 -->
         <PureTableBar
           :title="selectedClass ? `${selectedClass} - 成绩列表` : '成绩列表'"
           :columns="[
@@ -754,6 +786,7 @@ onMounted(() => {
         </PureTableBar>
       </el-tab-pane>
 
+      <!-- 全部成绩标签页 -->
       <el-tab-pane name="allGrades">
         <template #label>
           <span class="tab-label">
@@ -892,7 +925,8 @@ onMounted(() => {
       </el-tab-pane>
     </el-tabs>
 
-    <el-dialog v-model="dialogVisible" :title="dialogTitle" width="600px">
+    <!-- 新增/编辑成绩对话框 -->
+    <el-dialog v-model="dialogVisible" :title="dialogTitle" width="700px">
       <el-form ref="formRef" :model="form" :rules="rules" label-width="100px">
         <el-form-item label="学生" prop="studentName">
           <el-select
@@ -994,6 +1028,7 @@ onMounted(() => {
   </div>
 </template>
 
+<!-- 样式 -->
 <style lang="scss" scoped>
 @import "@/style/table-common.scss";
 

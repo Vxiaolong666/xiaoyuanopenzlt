@@ -9,10 +9,12 @@ import Refresh from "~icons/ep/refresh";
 import View from "~icons/ep/view";
 import StarFilled from "~icons/ep/star-filled";
 
+// 定义组件名称
 defineOptions({
   name: "EvaluationManagement"
 });
 
+// 评教数据接口定义
 interface EvaluationItem {
   id: number;
   courseId: number;
@@ -29,15 +31,18 @@ interface EvaluationItem {
   createTime: string;
 }
 
+// 响应式状态定义
 const loading = ref(false);
-const activeTab = ref("all");
+const activeTab = ref("all"); // 当前激活的标签页
 
+// 搜索表单数据
 const searchForm = reactive({
   courseName: "",
   teacher: "",
   studentName: ""
 });
 
+// 表格列配置
 const columns: TableColumnList = [
   {
     label: "评教ID",
@@ -105,8 +110,10 @@ const columns: TableColumnList = [
   }
 ];
 
+// 评教数据列表
 const evaluationList = ref<EvaluationItem[]>([]);
 
+// 获取评教数据
 const fetchData = () => {
   loading.value = true;
   fetchCommonData.evaluations()
@@ -154,6 +161,7 @@ const fetchData = () => {
     });
 };
 
+// 过滤后的评教数据（搜索过滤）
 const filteredEvaluations = computed(() => {
   let result = evaluationList.value;
   if (searchForm.courseName) {
@@ -178,6 +186,7 @@ const filteredEvaluations = computed(() => {
   return result;
 });
 
+// 课程评教统计数据
 const courseStats = computed(() => {
   const courseMap = new Map<string, EvaluationItem[]>();
   evaluationList.value.forEach(item => {
@@ -204,6 +213,7 @@ const courseStats = computed(() => {
   return result.sort((a, b) => b.avgScore - a.avgScore);
 });
 
+// 查看评教详情
 const viewDetail = (row: EvaluationItem) => {
   ElMessageBox.alert(
     `<div style="line-height: 2;">
@@ -226,16 +236,19 @@ const viewDetail = (row: EvaluationItem) => {
   );
 };
 
+// 重置搜索条件
 const resetSearch = () => {
   searchForm.courseName = "";
   searchForm.teacher = "";
   searchForm.studentName = "";
 };
 
+// 刷新数据
 const onRefresh = () => {
   message("刷新成功", { type: "success" });
 };
 
+// 根据评分获取颜色
 const getScoreColor = (score: number) => {
   if (score >= 4.5) return "#67C23A";
   if (score >= 4.0) return "#409EFF";
@@ -243,6 +256,7 @@ const getScoreColor = (score: number) => {
   return "#F56C6C";
 };
 
+// 组件挂载时获取数据
 onMounted(() => {
   fetchData();
 });
@@ -250,7 +264,9 @@ onMounted(() => {
 
 <template>
   <div class="main table-common">
+    <!-- 标签页容器 -->
     <el-tabs v-model="activeTab" type="border-card" class="evaluation-tabs">
+      <!-- 评教列表标签页 -->
       <el-tab-pane name="all">
         <template #label>
           <span class="tab-label">
@@ -259,6 +275,7 @@ onMounted(() => {
           </span>
         </template>
 
+        <!-- 搜索区域 -->
         <el-card shadow="never" class="mb-4">
           <el-form :inline="true" class="search-form">
             <el-form-item label="课程名称">
@@ -298,11 +315,13 @@ onMounted(() => {
           </el-form>
         </el-card>
 
+        <!-- 评教记录表格 -->
         <PureTableBar
           title="评教记录列表"
           :columns="columns"
           @refresh="onRefresh"
         >
+          <!-- 表格内容插槽 -->
           <template #default="{ size, dynamicColumns }">
             <pure-table
               :loading="loading"
@@ -381,6 +400,7 @@ onMounted(() => {
         </PureTableBar>
       </el-tab-pane>
 
+      <!-- 课程统计标签页 -->
       <el-tab-pane name="stats">
         <template #label>
           <span class="tab-label">
@@ -438,6 +458,7 @@ onMounted(() => {
   </div>
 </template>
 
+<!-- 样式 -->
 <style lang="scss" scoped>
 @import "@/style/table-common.scss";
 

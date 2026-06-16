@@ -8,10 +8,12 @@ import { usePagination } from "@/hooks/usePagination";
 import Search from "~icons/ep/search";
 import Refresh from "~icons/ep/refresh";
 
+// 定义组件名称
 defineOptions({
   name: "MyCourses"
 });
 
+// 课程数据接口定义
 interface CourseItem {
   id: number;
   name: string;
@@ -23,17 +25,21 @@ interface CourseItem {
   description: string;
 }
 
+// 响应式状态定义
 const loading = ref(false);
-const searchForm = ref({
+const searchForm = ref({ // 搜索表单数据
   name: "",
   teacher: ""
 });
 
+// 课程数据列表
 const courseList = ref<CourseItem[]>([]);
 const userStore = useUserStoreHook();
 
+// 分页配置
 const { pagination, handleSizeChange, handleCurrentChange } = usePagination();
 
+// 表格列配置
 const columns: TableColumnList = [
   {
     label: "课程ID",
@@ -71,6 +77,7 @@ const columns: TableColumnList = [
   }
 ];
 
+// 过滤后的课程列表（搜索过滤）
 const filteredCourses = computed(() => {
   let filtered = courseList.value;
 
@@ -89,12 +96,14 @@ const filteredCourses = computed(() => {
   return filtered;
 });
 
+// 分页后的课程数据
 const paginationData = computed(() => {
   const start = (pagination.currentPage - 1) * pagination.pageSize;
   const end = start + pagination.pageSize;
   return filteredCourses.value.slice(start, end);
 });
 
+// 获取课程数据
 const fetchData = async () => {
   loading.value = true;
 
@@ -160,11 +169,13 @@ const fetchData = async () => {
   }
 };
 
+// 搜索课程
 const onSearch = () => {
   pagination.currentPage = 1;
   pagination.total = filteredCourses.value.length;
 };
 
+// 重置搜索条件
 const resetSearch = () => {
   searchForm.value.name = "";
   searchForm.value.teacher = "";
@@ -172,11 +183,13 @@ const resetSearch = () => {
   pagination.total = courseList.value.length;
 };
 
+// 刷新数据
 const onRefresh = () => {
   resetSearch();
   fetchData();
 };
 
+// 组件挂载时获取数据
 onMounted(() => {
   fetchData();
 });
@@ -184,6 +197,7 @@ onMounted(() => {
 
 <template>
   <div class="main table-common">
+    <!-- 搜索区域 -->
     <el-card shadow="never" class="mb-4">
       <el-form :inline="true" class="search-form">
         <el-form-item label="课程名称">

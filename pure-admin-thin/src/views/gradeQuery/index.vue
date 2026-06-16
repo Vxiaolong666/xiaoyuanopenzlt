@@ -7,10 +7,12 @@ import Search from "~icons/ep/search";
 import Refresh from "~icons/ep/refresh";
 import TrendCharts from "~icons/ep/trend-charts";
 
+// 定义组件名称
 defineOptions({
   name: "GradeQuery"
 });
 
+// 成绩数据接口定义
 interface GradeItem {
   id: number;
   courseName: string;
@@ -25,14 +27,17 @@ interface GradeItem {
   examTime: string;
 }
 
+// 响应式状态定义
 const loading = ref(false);
-const activeTab = ref("allGrades");
+const activeTab = ref("allGrades"); // 当前激活的标签页
 
+// 搜索表单数据
 const searchForm = reactive({
   courseName: "",
   semester: ""
 });
 
+// 表格列配置
 const columns: TableColumnList = [
   {
     label: "课程名称",
@@ -87,8 +92,10 @@ const columns: TableColumnList = [
   }
 ];
 
+// 成绩数据列表
 const gradeList = ref<GradeItem[]>([]);
 
+// 学期选项配置
 const semesterOptions = [
   "2025-2026-1",
   "2025-2026-2",
@@ -96,6 +103,7 @@ const semesterOptions = [
   "2024-2025-2"
 ];
 
+// 获取成绩数据
 const fetchData = () => {
   loading.value = true;
 
@@ -126,6 +134,7 @@ const fetchData = () => {
     });
 };
 
+// 过滤后的成绩列表（搜索过滤）
 const filteredGrades = computed(() => {
   let result = gradeList.value;
   if (searchForm.courseName) {
@@ -141,6 +150,7 @@ const filteredGrades = computed(() => {
   return result;
 });
 
+// 按学期统计成绩
 const semesterGrades = computed(() => {
   const semesterMap = new Map<string, GradeItem[]>();
   gradeList.value.forEach(item => {
@@ -173,10 +183,12 @@ const semesterGrades = computed(() => {
   return result.sort((a, b) => b.semester.localeCompare(a.semester));
 });
 
+// 总学分
 const totalCredits = computed(() => {
   return gradeList.value.reduce((sum, item) => sum + item.credit, 0);
 });
 
+// 平均成绩
 const avgGrade = computed(() => {
   if (gradeList.value.length === 0) return 0;
   return (
@@ -185,6 +197,7 @@ const avgGrade = computed(() => {
   );
 });
 
+// 平均绩点
 const avgGradePoint = computed(() => {
   const totalCredit = gradeList.value.reduce(
     (sum, item) => sum + item.credit,
@@ -199,15 +212,18 @@ const avgGradePoint = computed(() => {
   );
 });
 
+// 重置搜索条件
 const resetSearch = () => {
   searchForm.courseName = "";
   searchForm.semester = "";
 };
 
+// 刷新数据
 const onRefresh = () => {
   message("刷新成功", { type: "success" });
 };
 
+// 根据成绩获取颜色
 const getGradeColor = (grade: number | string) => {
   const g = Number(grade);
   if (g >= 90) return "#67C23A";
@@ -217,6 +233,7 @@ const getGradeColor = (grade: number | string) => {
   return "#909399";
 };
 
+// 根据绩点获取颜色
 const getGradePointColor = (gradePoint: number | string) => {
   const gp = Number(gradePoint);
   if (gp >= 4.0) return "#67C23A";
@@ -226,6 +243,7 @@ const getGradePointColor = (gradePoint: number | string) => {
   return "#909399";
 };
 
+// 组件挂载时获取数据
 onMounted(() => {
   fetchData();
 });
@@ -233,7 +251,9 @@ onMounted(() => {
 
 <template>
   <div class="main table-common">
+    <!-- 标签页容器 -->
     <el-tabs v-model="activeTab" type="border-card" class="grade-tabs">
+      <!-- 成绩查询标签页 -->
       <el-tab-pane name="allGrades">
         <template #label>
           <span class="tab-label">
@@ -242,6 +262,7 @@ onMounted(() => {
           </span>
         </template>
 
+        <!-- 统计卡片区域 -->
         <el-row :gutter="20" class="mb-4">
           <el-col :span="6">
             <el-card shadow="hover" class="stats-card">

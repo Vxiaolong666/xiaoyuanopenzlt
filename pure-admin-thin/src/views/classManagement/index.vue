@@ -1,12 +1,7 @@
 <script setup lang="ts">
 import { ref, reactive, computed, onMounted } from "vue";
 import { message } from "@/utils/message";
-import {
-  addClass,
-  editClass,
-  deleteClass,
-  bindCourses
-} from "@/api/user";
+import { addClass, editClass, deleteClass, bindCourses } from "@/api/user";
 import { fetchCommonData } from "@/api/composed";
 import { PureTableBar } from "@/components/RePureTableBar";
 import type { FormInstance } from "element-plus";
@@ -18,10 +13,12 @@ import EditPen from "~icons/ep/edit-pen";
 import Delete from "~icons/ep/delete";
 import Link from "~icons/ep/link";
 
+// 定义组件名称
 defineOptions({
   name: "ClassManagement"
 });
 
+// 班级数据接口定义
 interface ClassItem {
   id: number;
   name: string;
@@ -31,6 +28,7 @@ interface ClassItem {
   createTime: string;
 }
 
+// 学生数据接口定义
 interface StudentItem {
   id: number;
   studentNo: string;
@@ -39,19 +37,22 @@ interface StudentItem {
   className: string;
 }
 
-const loading = ref(false);
-const dialogVisible = ref(false);
-const dialogTitle = ref("添加班级");
-const isEdit = ref(false);
-const formRef = ref<FormInstance>();
-const courseDialogVisible = ref(false);
-const currentClass = ref<ClassItem | null>(null);
+// 响应式状态定义
+const loading = ref(false); // 加载状态
+const dialogVisible = ref(false); // 新增/编辑对话框显示状态
+const dialogTitle = ref("添加班级"); // 对话框标题
+const isEdit = ref(false); // 是否编辑模式
+const formRef = ref<FormInstance>(); // 表单引用
+const courseDialogVisible = ref(false); // 绑定课程对话框显示状态
+const currentClass = ref<ClassItem | null>(null); // 当前选中的班级
 
+// 搜索表单数据
 const searchForm = reactive({
   name: "",
   grade: ""
 });
 
+// 表单数据（用于新增和编辑）
 const form = reactive({
   id: null as number | null,
   name: "",
@@ -59,25 +60,32 @@ const form = reactive({
   major: ""
 });
 
+// 选中的课程列表
 const selectedCourses = ref<string[]>([]);
 
+// 表单验证规则
 const rules = {
   name: [{ required: true, message: "请输入班级名称", trigger: "blur" }],
   grade: [{ required: true, message: "请选择年级", trigger: "change" }],
   major: [{ required: true, message: "请输入专业", trigger: "blur" }]
 };
 
+// 所有可选课程列表
 const allCourses = ref([]);
 
+// 学生列表（用于统计班级学生人数）
 const studentsList = ref<StudentItem[]>([]);
 
+// 班级数据列表
 const dataList = ref<ClassItem[]>([]);
 
+// 根据班级ID获取学生人数
 const getStudentCount = (classId: number) => {
   return studentsList.value.filter(student => student.classId === classId)
     .length;
 };
 
+// 获取班级和课程数据
 const fetchData = () => {
   loading.value = true;
 
@@ -127,6 +135,7 @@ const fetchData = () => {
     });
 };
 
+// 表格列配置
 const columns: TableColumnList = [
   {
     type: "selection",
@@ -174,8 +183,10 @@ const columns: TableColumnList = [
   }
 ];
 
+// 年级选项
 const gradeOptions = ["2023级", "2024级", "2025级", "2026级"];
 
+// 过滤后的数据（搜索过滤）
 const filteredData = computed(() => {
   let result = dataList.value;
   if (searchForm.name) {
@@ -189,6 +200,7 @@ const filteredData = computed(() => {
   return result;
 });
 
+// 获取学生列表数据
 const fetchStudents = () => {
   fetchCommonData.students().then(res => {
     if (res.success) {
@@ -203,6 +215,7 @@ const fetchStudents = () => {
   });
 };
 
+// 打开新增班级对话框
 const handleAdd = () => {
   isEdit.value = false;
   dialogTitle.value = "添加班级";
@@ -213,6 +226,7 @@ const handleAdd = () => {
   dialogVisible.value = true;
 };
 
+// 打开编辑班级对话框
 const handleEdit = (row: ClassItem) => {
   isEdit.value = true;
   dialogTitle.value = "编辑班级";
@@ -223,12 +237,14 @@ const handleEdit = (row: ClassItem) => {
   dialogVisible.value = true;
 };
 
+// 打开绑定课程对话框
 const handleBindCourses = (row: ClassItem) => {
   currentClass.value = row;
   selectedCourses.value = [...row.courses];
   courseDialogVisible.value = true;
 };
 
+// 删除班级
 const handleDelete = (row: ClassItem) => {
   const studentCount = getStudentCount(row.id);
   if (studentCount > 0) {
@@ -251,6 +267,7 @@ const handleDelete = (row: ClassItem) => {
   });
 };
 
+// 提交表单（新增或编辑班级）
 const submitForm = async (formEl: FormInstance | undefined) => {
   if (!formEl) return;
   await formEl.validate(valid => {
@@ -291,6 +308,7 @@ const submitForm = async (formEl: FormInstance | undefined) => {
   });
 };
 
+// 保存课程绑定
 const saveCourses = () => {
   if (currentClass.value) {
     bindCourses({
@@ -308,17 +326,20 @@ const saveCourses = () => {
   }
 };
 
+// 重置搜索条件
 const resetSearch = () => {
   searchForm.name = "";
   searchForm.grade = "";
 };
 
+// 刷新数据
 const onRefresh = () => {
   fetchStudents();
   fetchData();
   message("刷新成功", { type: "success" });
 };
 
+// 初始化数据
 fetchStudents();
 onMounted(() => {
   fetchData();
@@ -327,6 +348,7 @@ onMounted(() => {
 
 <template>
   <div class="main table-common">
+    <!-- 搜索区域 -->
     <el-card shadow="never" class="mb-4">
       <el-form :inline="true" class="search-form">
         <el-form-item label="班级名称">
@@ -365,7 +387,9 @@ onMounted(() => {
       </el-form>
     </el-card>
 
+    <!-- 表格区域 -->
     <PureTableBar title="班级管理" :columns="columns" @refresh="onRefresh">
+      <!-- 操作按钮插槽 -->
       <template #buttons>
         <el-button type="primary" @click="handleAdd">
           <el-icon class="mr-1"><Plus /></el-icon>
@@ -373,6 +397,7 @@ onMounted(() => {
         </el-button>
       </template>
 
+      <!-- 表格内容插槽 -->
       <template #default="{ size, dynamicColumns }">
         <pure-table
           :loading="loading"
@@ -382,11 +407,13 @@ onMounted(() => {
           row-key="id"
           show-overflow-tooltip
         >
+          <!-- 学生人数列插槽 -->
           <template #studentCount="{ row }">
             <el-tag type="info" size="small">{{
               getStudentCount(row.id)
             }}</el-tag>
           </template>
+          <!-- 绑定课程列插槽 -->
           <template #courses="{ row }">
             <div class="course-tags">
               <el-tag
@@ -402,6 +429,7 @@ onMounted(() => {
               </el-tag>
             </div>
           </template>
+          <!-- 操作列插槽 -->
           <template #operation="{ row }">
             <el-button
               link
@@ -435,6 +463,7 @@ onMounted(() => {
       </template>
     </PureTableBar>
 
+    <!-- 新增/编辑班级对话框 -->
     <el-dialog v-model="dialogVisible" :title="dialogTitle" width="500px">
       <el-form ref="formRef" :model="form" :rules="rules" label-width="80px">
         <el-form-item label="班级名称" prop="name">
@@ -464,6 +493,7 @@ onMounted(() => {
       </template>
     </el-dialog>
 
+    <!-- 绑定课程对话框 -->
     <el-dialog v-model="courseDialogVisible" title="绑定课程" width="600px">
       <div class="course-select">
         <el-checkbox-group v-model="selectedCourses">
@@ -487,6 +517,7 @@ onMounted(() => {
   </div>
 </template>
 
+<!-- 样式 -->
 <style lang="scss" scoped>
 @import "@/style/table-common.scss";
 

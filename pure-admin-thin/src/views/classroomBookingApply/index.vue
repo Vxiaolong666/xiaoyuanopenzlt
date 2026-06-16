@@ -10,10 +10,12 @@ import Search from "~icons/ep/search";
 import Refresh from "~icons/ep/refresh";
 import Plus from "~icons/ep/plus";
 
+// 定义组件名称
 defineOptions({
   name: "ClassroomBookingApply"
 });
 
+// 教室数据接口定义
 interface ClassroomItem {
   id: number;
   name: string;
@@ -24,6 +26,7 @@ interface ClassroomItem {
   status: string;
 }
 
+// 借用申请数据接口定义
 interface BookingApply {
   id: number;
   classroomId: number;
@@ -39,17 +42,20 @@ interface BookingApply {
   createTime: string;
 }
 
+// 响应式状态定义
 const loading = ref(false);
-const dialogVisible = ref(false);
+const dialogVisible = ref(false); // 申请借用对话框显示状态
 const formRef = ref<FormInstance>();
-const activeTab = ref("classroomList");
+const activeTab = ref("classroomList"); // 当前激活的标签页
 
+// 搜索表单数据
 const searchForm = reactive({
   name: "",
   building: "",
   status: ""
 });
 
+// 申请表单数据
 const applyForm = reactive({
   classroomId: null as number | null,
   classroomName: "",
@@ -60,6 +66,7 @@ const applyForm = reactive({
   endTime: ""
 });
 
+// 申请表单验证规则
 const applyRules = {
   classroomId: [{ required: true, message: "请选择教室", trigger: "change" }],
   applicant: [{ required: true, message: "请输入申请人", trigger: "blur" }],
@@ -68,6 +75,7 @@ const applyRules = {
   endTime: [{ required: true, message: "请选择结束时间", trigger: "change" }]
 };
 
+// 教室列表表格列配置
 const classroomColumns: TableColumnList = [
   {
     label: "教室名称",
@@ -107,6 +115,7 @@ const classroomColumns: TableColumnList = [
   }
 ];
 
+// 申请记录表格列配置
 const applyColumns: TableColumnList = [
   {
     label: "申请ID",
@@ -151,9 +160,11 @@ const applyColumns: TableColumnList = [
   }
 ];
 
-const classroomList = ref<ClassroomItem[]>([]);
-const applyList = ref<BookingApply[]>([]);
+// 数据列表
+const classroomList = ref<ClassroomItem[]>([]); // 教室列表
+const applyList = ref<BookingApply[]>([]); // 申请记录列表
 
+// 选项配置
 const buildingOptions = ["教学楼A", "教学楼B", "实验楼C", "综合楼D", "图书馆E"];
 const statusOptions = [
   { value: "", label: "全部" },
@@ -161,6 +172,7 @@ const statusOptions = [
   { value: "使用中", label: "使用中" }
 ];
 
+// 获取教室和借用数据
 const fetchData = () => {
   loading.value = true;
 
@@ -202,6 +214,7 @@ const fetchData = () => {
     });
 };
 
+// 过滤后的教室列表（搜索过滤）
 const filteredClassrooms = computed(() => {
   let result = classroomList.value;
   if (searchForm.name) {
@@ -218,6 +231,7 @@ const filteredClassrooms = computed(() => {
   return result;
 });
 
+// 当前用户的申请列表
 const myApplyList = computed(() => {
   const userStore = useUserStoreHook();
   const accountId = userStore.accountId;
@@ -229,6 +243,7 @@ const myApplyList = computed(() => {
   );
 });
 
+// 打开申请借用对话框
 const handleApply = (row: ClassroomItem) => {
   if (row.status === "使用中") {
     message("该教室正在使用中，无法申请借用", { type: "warning" });
@@ -245,6 +260,7 @@ const handleApply = (row: ClassroomItem) => {
   dialogVisible.value = true;
 };
 
+// 提交借用申请
 const submitApply = async (formEl: FormInstance | undefined) => {
   if (!formEl) return;
   await formEl.validate(valid => {
@@ -273,17 +289,20 @@ const submitApply = async (formEl: FormInstance | undefined) => {
   });
 };
 
+// 重置搜索条件
 const resetSearch = () => {
   searchForm.name = "";
   searchForm.building = "";
   searchForm.status = "";
 };
 
+// 刷新数据
 const onRefresh = () => {
   fetchData();
   message("刷新成功", { type: "success" });
 };
 
+// 组件挂载时获取数据
 onMounted(() => {
   fetchData();
 });
@@ -291,7 +310,9 @@ onMounted(() => {
 
 <template>
   <div class="main table-common">
+    <!-- 标签页容器 -->
     <el-tabs v-model="activeTab" type="border-card" class="booking-tabs">
+      <!-- 教室列表标签页 -->
       <el-tab-pane name="classroomList">
         <template #label>
           <span class="tab-label">
@@ -300,6 +321,7 @@ onMounted(() => {
           </span>
         </template>
 
+        <!-- 搜索区域 -->
         <el-card shadow="never" class="mb-4">
           <el-form :inline="true" class="search-form">
             <el-form-item label="教室名称">
@@ -353,11 +375,13 @@ onMounted(() => {
           </el-form>
         </el-card>
 
+        <!-- 教室列表表格 -->
         <PureTableBar
           title="教室列表"
           :columns="classroomColumns"
           @refresh="onRefresh"
         >
+          <!-- 表格内容插槽 -->
           <template #default="{ size, dynamicColumns }">
             <pure-table
               :loading="loading"
@@ -425,6 +449,7 @@ onMounted(() => {
         </PureTableBar>
       </el-tab-pane>
 
+      <!-- 我的申请标签页 -->
       <el-tab-pane name="myApply">
         <template #label>
           <span class="tab-label">
@@ -473,6 +498,7 @@ onMounted(() => {
       </el-tab-pane>
     </el-tabs>
 
+    <!-- 申请借用对话框 -->
     <el-dialog v-model="dialogVisible" title="申请借用教室" width="500px">
       <el-form
         ref="formRef"
@@ -528,6 +554,7 @@ onMounted(() => {
   </div>
 </template>
 
+<!-- 样式 -->
 <style lang="scss" scoped>
 @import "@/style/table-common.scss";
 
